@@ -21,5 +21,10 @@ module.exports = {
     sourceType: "module",
   },
   plugins: ["react"],
+  settings: {
+    react: {
+      version: "detect",
+    },
+  },
   rules: {},
 };
