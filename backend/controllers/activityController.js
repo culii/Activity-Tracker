@@ -29,17 +29,86 @@ const getActivity = async (req, res) => {
 
 // create new activity
 const createActivity = async (req, res) => {
-  const { activityName, duration, startTimeAndDate } = req.body;
-  // add doc to db
+  // deconstructing what the user sends from req.body to allow cleaner code
+  const { duration, startTimeAndDate, colour } = req.body;
+
   try {
-    const activity = await Activity.create({
-      activityName,
-      duration,
-      startTimeAndDate,
-    });
-    res.status(200).json(activity);
+    // convert name to lowercase
+    const name = req.body.name.toLowerCase();
+
+    let isNewTemplateCreated = false;
+    // Check if a template with the same name exists in the DB
+    let existingTemplate = await Activity.findOne({ name, template: true });
+
+    // If a template does not already exist, create it
+    if (!existingTemplate) {
+      existingTemplate = new Activity({
+        name,
+        template: true,
+        colour,
+      });
+      await existingTemplate.save();
+      isNewTemplateCreated = true;
+    }
+
+    // if user provides duration and startTimeAndDate, check for overlap and then clone/save as new activity
+    if (duration && startTimeAndDate) {
+      // Calculate end time of the new activity
+      const endTimeAndDate = new Date(
+        new Date(startTimeAndDate).getTime() + duration * 60000
+      );
+
+      // Check if this activity overlaps with an existing one
+      const overlappingActivity = await Activity.findOne({
+        startTimeAndDate: { $lt: endTimeAndDate },
+        endTimeAndDate: { $gt: startTimeAndDate },
+        template: false,
+      });
+
+      if (overlappingActivity) {
+        return res.status(400).json({
+          success: false,
+          message: "Activity overlaps with another scheduled activity.",
+        });
+      }
+
+      const newActivity = new Activity({
+        name: existingTemplate.name, // use name from the template
+        duration,
+        startTimeAndDate,
+        endTimeAndDate,
+        template: false,
+        colour: existingTemplate.colour, // use colour from the template
+      });
+
+      await newActivity.save();
+
+      const message = isNewTemplateCreated
+        ? "New template activity and scheduled activity created successfully."
+        : "Scheduled activity created successfully.";
+
+      return res.status(200).json({
+        success: true,
+        message: message,
+        data: newActivity,
+      });
+    } else {
+      const message = isNewTemplateCreated
+        ? "New template activity created."
+        : "Template activity with the given name already exists.";
+
+      return res.status(200).json({
+        success: true,
+        message: message,
+        data: existingTemplate,
+      });
+    }
   } catch (error) {
-    res.status(400).json({ error: error.message });
+    res.status(500).json({
+      success: false,
+      message: "Server Error",
+      error: error.message,
+    });
   }
 };
 
@@ -47,7 +116,7 @@ const createActivity = async (req, res) => {
 const deleteActivity = async (req, res) => {
   // grab id from route params
   const { id } = req.params;
-  //is valid?
+  // is valid?
   if (!mongoose.Types.ObjectId.isValid(id)) {
     return res.status(404).json({ error: "No such activity" });
   }
