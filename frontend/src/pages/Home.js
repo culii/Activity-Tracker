@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 
 // components
-//import ActivityDetails from "../components/ActivityDetails";
+import ActivityDetails from "../components/ActivityDetails";
 
 const Home = () => {
   const [activities, setActivities] = useState(null);
@@ -22,7 +22,7 @@ const Home = () => {
       <div className="activities">
         {activities &&
           activities.map((activity) => (
-            <p key={activity._id}>{activity.name}</p>
+            <ActivityDetails key={activity._id} activity={activity} />
           ))}
       </div>
     </div>
