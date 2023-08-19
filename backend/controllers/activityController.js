@@ -34,17 +34,20 @@ const createActivity = async (req, res) => {
 
   try {
     // convert name to lowercase
-    const name = req.body.name.toLowerCase();
+    const activityName = req.body.activityName.toLowerCase();
 
     let isNewTemplateCreated = false;
     // Check if a template with the same name exists in the DB
-    let existingTemplate = await Activity.findOne({ name, template: true });
+    let existingTemplate = await Activity.findOne({
+      activityName,
+      isTemplate: true,
+    });
 
     // If a template does not already exist, create it
     if (!existingTemplate) {
       existingTemplate = new Activity({
-        name,
-        template: true,
+        activityName,
+        isTemplate: true,
         colour,
       });
       await existingTemplate.save();
@@ -62,7 +65,7 @@ const createActivity = async (req, res) => {
       const overlappingActivity = await Activity.findOne({
         startTimeAndDate: { $lt: endTimeAndDate },
         endTimeAndDate: { $gt: startTimeAndDate },
-        template: false,
+        isTemplate: false,
       });
 
       if (overlappingActivity) {
@@ -73,11 +76,11 @@ const createActivity = async (req, res) => {
       }
 
       const newActivity = new Activity({
-        name: existingTemplate.name, // use name from the template
+        activityName: existingTemplate.activityName, // use name from the template
         duration,
         startTimeAndDate,
         endTimeAndDate,
-        template: false,
+        isTemplate: false,
         colour: existingTemplate.colour, // use colour from the template
       });
 

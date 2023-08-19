@@ -4,7 +4,7 @@ const ActivityDetails = ({ activity }) => {
       className="activity-details"
       style={{ backgroundColor: activity.colour }}
     >
-      <h4>{activity.name}</h4>
+      <h4>{activity.activityName}</h4>
       <p>
         <strong>Duration (mins): </strong>
         {activity.duration}

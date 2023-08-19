@@ -4,7 +4,7 @@ const Schema = mongoose.Schema;
 
 const activitySchema = new Schema(
   {
-    name: {
+    activityName: {
       type: String,
       required: true,
     },
@@ -23,7 +23,7 @@ const activitySchema = new Schema(
       default: null,
       required: false,
     },
-    template: {
+    isTemplate: {
       // To determine if this is just a template (no date/duration)
       type: Boolean,
       default: false,

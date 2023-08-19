@@ -1,6 +1,12 @@
 /* google font */
 @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;800&family=VT323&display=swap");
 
+@media (max-width: 768px) {
+  .home {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* layout */
 :root {
   --primary: #1aac83;
@@ -65,4 +71,86 @@ header a {
   padding: 6px;
   border-radius: 50%;
   color: #333;
+}
+.chart {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+  width: 100%;
+}
+
+.week-charts {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-content: start;
+  gap: 10px; /* Spacing between charts */
+  width: 100%; /* Using 100% width to make it responsive */
+  margin: 0 auto;
+  border-radius: 0;
+  background-color: transparent; /* Optional: removing the background circle */
+}
+
+.day-chart {
+  flex: none; /* Do not stretch or shrink */
+  margin: 10px;
+  width: calc(33.33% - 20px); /* 33.33% for 3 items per row minus the margin */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: start; /* Align the top of the column */
+  position: relative; /* Removed absolute positioning */
+}
+
+/* Adjustments for smaller screens (e.g. mobile) */
+@media (max-width: 768px) {
+  .day-chart {
+    width: 100%; /* One chart per row on smaller screens */
+  }
+}
+
+.day-chart:nth-child(1) {
+  top: 10%;
+  left: 50%;
+  transform: translateX(-50%);
+} /* Sunday */
+
+.day-chart:nth-child(2) {
+  top: 30%;
+  left: 10%;
+} /* Monday */
+
+.day-chart:nth-child(3) {
+  top: 30%;
+  right: 10%;
+} /* Friday */
+
+.day-chart:nth-child(4) {
+  top: 50%;
+  left: 10%;
+} /* Tuesday */
+
+.day-chart:nth-child(5) {
+  top: 50%;
+  right: 10%;
+} /* Thursday */
+
+.day-chart:nth-child(6) {
+  top: 70%;
+  left: 10%;
+} /* Wednesday */
+
+.day-chart:nth-child(7) {
+  top: 70%;
+  right: 10%;
+} /* Saturday */
+
+.activity-doughnut-container {
+  width: 90%; /* Or a fixed size like 200px; */
+  height: 90%; /* Or a fixed size like 200px; */
+}
+
+.activity-doughnut-container h2 {
+  margin-bottom: 20px; /* Or more, depending on your design needs */
 }
