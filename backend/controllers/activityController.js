@@ -3,9 +3,27 @@ const mongoose = require("mongoose");
 
 // get all activities
 const getActivities = async (req, res) => {
-  const activities = await Activity.find({}).sort({ createdAt: -1 });
-
-  res.status(200).json(activities);
+  try {
+    const scheduledActivities = await Activity.find({ isTemplate: false }).sort(
+      { createdAt: -1 }
+    );
+    const templateActivities = await Activity.find({ isTemplate: true }).sort({
+      createdAt: -1,
+    });
+    res.status(200).json({
+      success: true,
+      data: {
+        scheduledActivities,
+        templateActivities,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Server Error",
+      error: error.message,
+    });
+  }
 };
 
 // get a single activity
@@ -29,19 +47,17 @@ const getActivity = async (req, res) => {
 
 // create new activity
 const createActivity = async (req, res) => {
-  // deconstructing what the user sends from req.body to allow cleaner code
   const { duration, startTimeAndDate, colour } = req.body;
+  const activityName = req.body.activityName.toLowerCase();
 
   try {
-    // convert name to lowercase
-    const activityName = req.body.activityName.toLowerCase();
-
-    let isNewTemplateCreated = false;
-    // Check if a template with the same name exists in the DB
     let existingTemplate = await Activity.findOne({
       activityName,
       isTemplate: true,
     });
+
+    let templateActivity = null;
+    let scheduledActivity = null;
 
     // If a template does not already exist, create it
     if (!existingTemplate) {
@@ -51,17 +67,14 @@ const createActivity = async (req, res) => {
         colour,
       });
       await existingTemplate.save();
-      isNewTemplateCreated = true;
+      templateActivity = existingTemplate;
     }
 
-    // if user provides duration and startTimeAndDate, check for overlap and then clone/save as new activity
     if (duration && startTimeAndDate) {
-      // Calculate end time of the new activity
       const endTimeAndDate = new Date(
         new Date(startTimeAndDate).getTime() + duration * 60000
       );
 
-      // Check if this activity overlaps with an existing one
       const overlappingActivity = await Activity.findOne({
         startTimeAndDate: { $lt: endTimeAndDate },
         endTimeAndDate: { $gt: startTimeAndDate },
@@ -76,36 +89,28 @@ const createActivity = async (req, res) => {
       }
 
       const newActivity = new Activity({
-        activityName: existingTemplate.activityName, // use name from the template
+        activityName: existingTemplate.activityName,
         duration,
         startTimeAndDate,
         endTimeAndDate,
         isTemplate: false,
-        colour: existingTemplate.colour, // use colour from the template
+        colour: existingTemplate.colour,
       });
 
       await newActivity.save();
-
-      const message = isNewTemplateCreated
-        ? "New template activity and scheduled activity created successfully."
-        : "Scheduled activity created successfully.";
-
-      return res.status(200).json({
-        success: true,
-        message: message,
-        data: newActivity,
-      });
-    } else {
-      const message = isNewTemplateCreated
-        ? "New template activity created."
-        : "Template activity with the given name already exists.";
-
-      return res.status(200).json({
-        success: true,
-        message: message,
-        data: existingTemplate,
-      });
+      scheduledActivity = newActivity;
     }
+
+    res.status(200).json({
+      success: true,
+      message: templateActivity
+        ? "New template activity and scheduled activity created successfully."
+        : "Scheduled activity created successfully.",
+      data: {
+        templateActivity,
+        scheduledActivity,
+      },
+    });
   } catch (error) {
     res.status(500).json({
       success: false,

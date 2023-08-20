@@ -1,27 +1,32 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
+import { useActivitiesContext } from "../hooks/useActivitiesContext";
 
 // components
-import ActivityDetails from "../components/ActivityDetails";
+import ActivityTemplateDetails from "../components/ActivityTemplateDetails";
 import ActivityDoughnut from "../components/ActivityDoughnut";
 import ActivityForm from "../components/ActivityForm";
 
 const Home = () => {
-  const [templates, setTemplates] = useState(null);
-  const [scheduledActivities, setScheduledActivities] = useState(null);
+  const { activities, scheduledActivities, dispatch } = useActivitiesContext();
 
   useEffect(() => {
     const fetchActivities = async () => {
       try {
         const response = await fetch("/api/activities");
         const json = await response.json();
-
+        console.log("Server response:", json);
         if (response.ok) {
-          // separate template from non scheduled
-          const templates = json.filter((activity) => activity.isTemplate);
-          const scheduled = json.filter((activity) => !activity.isTemplate);
+          // Directly extract scheduled and template activities from response
+          const { scheduledActivities, templateActivities } = json.data;
 
-          setTemplates(templates);
-          setScheduledActivities(scheduled);
+          dispatch({
+            type: "SET_ACTIVITIES",
+            payload: templateActivities,
+          });
+          dispatch({
+            type: "SET_SCHEDULED_ACTIVITIES",
+            payload: scheduledActivities,
+          });
         } else {
           console.error("Failed to fetch activities:", json);
         }
@@ -31,7 +36,7 @@ const Home = () => {
     };
 
     fetchActivities();
-  }, []);
+  }, [dispatch]);
 
   const groupByDay = (activities) => {
     const days = [
@@ -47,7 +52,7 @@ const Home = () => {
     days.forEach((day) => (grouped[day] = []));
 
     activities.forEach((activity) => {
-      const day = days[new Date(activity.startTimeAndDate).getDay()]; // Assuming activity has a 'date' field
+      const day = days[new Date(activity.startTimeAndDate).getDay()];
       if (grouped[day]) {
         grouped[day].push(activity);
       }
@@ -59,15 +64,14 @@ const Home = () => {
   const dataByDay = scheduledActivities
     ? groupByDay(scheduledActivities)
     : null;
-
   // JSX Render
   return (
     <div className="home">
       <div className="templates">
         <ActivityForm />
-        {templates &&
-          templates.map((activity) => (
-            <ActivityDetails key={activity._id} activity={activity} />
+        {activities &&
+          activities.map((activity) => (
+            <ActivityTemplateDetails key={activity._id} activity={activity} />
           ))}
       </div>
       <div className="chart">

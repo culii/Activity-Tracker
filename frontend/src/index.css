@@ -9,7 +9,7 @@
 
 /* layout */
 :root {
-  --primary: #1aac83;
+  --primary: #83bd3c;
   --error: #e7195a;
 }
 body {
@@ -53,6 +53,7 @@ header a {
   box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.05);
 }
 .activity-details h4 {
+  text-transform: capitalize;
   margin: 0 0 10px 0;
   font-size: 1.2em;
   color: var(--primary);

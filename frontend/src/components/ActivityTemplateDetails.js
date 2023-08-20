@@ -1,4 +1,4 @@
-const ActivityDetails = ({ activity }) => {
+const ActivityTemplateDetails = ({ activity }) => {
   return (
     <div
       className="activity-details"
@@ -26,4 +26,4 @@ const ActivityDetails = ({ activity }) => {
   );
 };
 
-export default ActivityDetails;
+export default ActivityTemplateDetails;
